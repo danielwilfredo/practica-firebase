@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Image, Alert } from 'react-native';
 import { database } from '../config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
-//import * as ImagePicker from 'expo-image-picker';
+import * as ImagePicker from 'expo-image-picker';
 
 const Add = ({ navigation }) => {
+
 
     const [producto, setProducto] = useState({
         nombre: '',
@@ -18,96 +19,81 @@ const Add = ({ navigation }) => {
     const goToHome = () => {
         navigation.navigate('Home');
     };
-/*
+
     const openGalery = async () => {
-        // No permissions request is necessary for launching the image library
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.All,
-            allowsEditing: true,
-            aspect: [8, 8],
-            quality: 1,
-        });
+        try {
+            // No permissions request is necessary for launching the image library
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                allowsEditing: true,
+                aspect: [8, 8],
+                quality: 1,
+            });
 
-        console.log(result.assets[0].uri);
+            console.log(result.assets[0].uri);
 
-        if (!result.canceled) {
-            setImageUri(result.assets[0].uri);
+            if (!result.canceled) {
+                setProducto({
+                    ...producto,
+                    imagen: result.assets[0].uri
+                });
+            }
+
+        } catch (error) {
+            console.log('Error al abrir la galería', error);
         }
-    };*/
+
+
+    };
 
 
     const agregarProducto = async () => {
-       
+        try {
             // Agregar el documento a Firestore y obtener la referencia
             await addDoc(collection(database, 'productos'), producto);
-    
+
             // Acceder al ID del documento
             console.log('Se guardó la colección');
-    
+
+            Alert.alert('Producto agregado', 'El producto se agregó correctamente', [
+                {
+                    text: 'Ok',
+                    onPress: goToHome,
+                },
+            ]);
             // Navegar a la pantalla de inicio
             goToHome();
 
-    }
-    /* 2
-    const agregarProducto = async () => {
-        try {
-            let imageUrl = null;
-            if (true) {
-   
-                setImageUri("test");  // Actualizar state de imagen con la URL
-            }
-    
-            // Crear un nuevo objeto de producto con los datos actualizados
-            const nuevoProducto = {
-                ...producto,
-                imagen: '',  // Asignar la URL de la imagen
-            };
-    
-            // Agregar el nuevo producto a Firestore
-            await addDoc(collection(database, 'productos'), nuevoProducto);
-            console.log('Se guardó la colección');
-            goToHome();
-        } catch (e) {
-            console.error('Error adding document: ', e);
+        } catch (error) {
+            console.error('Error al agregar el producto', error);
         }
-    };
-    */
+    }
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Agregar producto</Text>
-
-            <Text>Nombre:</Text>
-            <TextInput
-                style={styles.input}
-                onChangeText={text => setProducto({ ...producto, nombre: text })}
-                value={producto.nombre}
-            />
-
-            <Text>Precio:</Text>
-            <TextInput
-                style={styles.input}
-                onChangeText={text => setProducto({ ...producto, precio: parseFloat(text) })}
-                value={producto.precio}
-                keyboardType='numeric'
-            />
-                        <Text>image:</Text>
-            <TextInput
-                style={styles.input}
-                onChangeText={text => setProducto({ ...producto, imagen: text })}
-                value={producto.imagen}
-            />
-
-{
-    /*
-                <Text>Imagen:</Text>
+            <View style={styles.inputContainer}>
+                <Text style={styles.label}>Nombre:</Text>
+                <TextInput
+                    style={styles.input}
+                    onChangeText={text => setProducto({ ...producto, nombre: text })}
+                    value={producto.nombre}
+                />
+            </View>
+            <View style={styles.inputContainer}>
+                <Text style={styles.label}>Precio:</Text>
+                <TextInput
+                    style={styles.input}
+                    onChangeText={text => setProducto({ ...producto, precio: parseFloat(text) })}
+                    value={producto.precio}
+                    keyboardType='numeric'
+                />
+            </View>
+            <Text>Imagen:</Text>
             <TouchableOpacity onPress={openGalery} style={styles.imagePicker}>
                 <Text style={styles.imagePickerText}>Seleccionar Imagen</Text>
             </TouchableOpacity>
-            {imageUri ? <Image source={{ uri: imageUri }} style={styles.imagePreview} /> : null}
-
-    */
-}
+            {producto.imagen ? <Image source={{ uri: producto.imagen }} style={styles.imagePreview} /> : null}
 
             <TouchableOpacity
                 style={styles.button}
@@ -118,7 +104,7 @@ const Add = ({ navigation }) => {
             <TouchableOpacity
                 style={styles.button}
                 onPress={goToHome}>
-                <Text style={styles.buttonText}>Go to Home</Text>
+                <Text style={styles.buttonText}>Volver a home</Text>
             </TouchableOpacity>
         </View>
     );
@@ -142,14 +128,20 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 40,
-        borderColor: 'gray',
+        borderColor: '#ccc',
         borderWidth: 1,
-        marginBottom: 20,
-        width: '100%',
-        paddingHorizontal: 10,
+        borderRadius: 4,
+        paddingLeft: 8,
+        backgroundColor: '#fff', // Fondo blanco para el TextInput
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 2,
+        width: '100%'
     },
     imagePicker: {
-        backgroundColor: 'blue',
+        backgroundColor: '#0288d1',
         padding: 10,
         borderRadius: 5,
         alignItems: 'center',
@@ -166,7 +158,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     button: {
-        backgroundColor: 'blue',
+        backgroundColor: '#0288d1',
         padding: 10,
         borderRadius: 5,
         marginTop: 20,
@@ -177,5 +169,16 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    label: {
+        fontSize: 16,
+        marginBottom: 8,
+        color: '#333', // Color de texto oscuro para mejor legibilidad
+    },
+    inputContainer: {
+        width: '100%',
+        padding: 16,
+        backgroundColor: '#f8f9fa', // Fondo claro para mejor visibilidad
+        marginBottom: 16, // Espacio entre cada conjunto de Text y TextInput
     },
 });

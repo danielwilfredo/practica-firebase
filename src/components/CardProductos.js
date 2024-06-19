@@ -28,7 +28,9 @@ const CardProductos = ({ id, nombre, precio, vendido, imagen }) => {
         <View style={styles.card}>
             <Text style={styles.nombre}>{nombre}</Text>
             <Text style={styles.text}>${precio}</Text>
-            <Text style={styles.text}>{vendido ? "Vendido" : "Disponible"}</Text>
+            <Text style={[styles.text, vendido ? styles.vendido : styles.disponible]}>
+                {vendido ? "Vendido" : "Disponible"}
+            </Text>
             {imagen ? (
                 <Image source={{ uri: imagen }} style={styles.image} />
             ) : (
@@ -38,12 +40,14 @@ const CardProductos = ({ id, nombre, precio, vendido, imagen }) => {
                 <TouchableOpacity
                     style={styles.deleteButton}
                     onPress={() => handleDelete(id)}>
-                    <Text style={styles.deleteButtonText}>Delete</Text>
+                    <Text style={styles.deleteButtonText}>Eliminar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.updateButton}
+                    style={[styles.updateButton, vendido ? styles.regresarButton : styles.venderButton]}
                     onPress={() => handleUpdate(id, vendido)}>
-                    <Text style={styles.updateButtonText}>Vender</Text>
+                    <Text style={styles.updateButtonText}>
+                        {vendido ? "Devolver Producto" : "Vender"}
+                    </Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -71,6 +75,14 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 5,
     },
+    vendido: {
+        color: 'red',
+        fontWeight: 'bold',
+    },
+    disponible: {
+        color: 'green',
+        fontWeight: 'bold',
+    },
     image: {
         width: '100%',
         height: 200,
@@ -93,7 +105,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     updateButton: {
-        backgroundColor: '#4caf50',
         padding: 10,
         borderRadius: 5,
     },
@@ -101,6 +112,12 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    venderButton: {
+        backgroundColor: '#4caf50',
+    },
+    regresarButton: {
+        backgroundColor: '#ff9800',
     },
 });
 

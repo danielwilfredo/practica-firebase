@@ -10,9 +10,9 @@ const Navigation = () => {
     return (
         <NavigationContainer>
             <Stack.Navigator>
-                <Stack.Screen name="Home" component={Home} />
+                <Stack.Screen name="Home" component={Home} options={{title:'Home'}} />
                 <Stack.Screen name="Add" component={Add} 
-                options={{presentation:'modal'}}/>
+                options={{presentation:'modal', title:'Agregar productos'}}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

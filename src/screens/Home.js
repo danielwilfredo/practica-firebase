@@ -47,14 +47,14 @@ const Home = ({navigation}) => {
                 contentContainerStyle={styles.list}
             />
             : 
-            <Text>No hay productos disponibles</Text>
+            <Text style={styles.Subtitle}>No hay productos disponibles</Text>
             ) 
 
 }
             <TouchableOpacity
-                style={styles.goToAddButton}
+                style={styles.Button}
                 onPress={goToAdd}>
-                <Text style={styles.goToAddButtonText}>Agregar Producto</Text>
+                <Text style={styles.ButtonText}>Agregar Producto</Text>
             </TouchableOpacity>
         </View>
     );
@@ -65,7 +65,7 @@ export default Home;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#FEFEFE',
         justifyContent: 'center',
         padding: 20,
     },
@@ -75,15 +75,22 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 20,
     },
-    goToAddButton: {
-        backgroundColor: 'blue',
+    Subtitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 10,
+        color:'#ff9800'
+    },
+    Button: {
+        backgroundColor: '#0288d1',
         padding: 10,
         borderRadius: 5,
         marginTop: 20,
         marginHorizontal: 50,
         paddingVertical: 20,
     },
-    goToAddButtonText: {
+    ButtonText: {
         color: 'white',
         fontWeight: 'bold',
         textAlign: 'center',
