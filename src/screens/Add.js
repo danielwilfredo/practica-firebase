@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Image, Alert } from 'react-native';
-import { database } from '../config/firebase';
+import { database, storage } from '../config/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 
 const Add = ({ navigation }) => {
-
-
     const [producto, setProducto] = useState({
         nombre: '',
         precio: 0,
@@ -14,7 +13,6 @@ const Add = ({ navigation }) => {
         creado: new Date(),
         imagen: ''
     });
-    //const [imageUri, setImageUri] = useState('');
 
     const goToHome = () => {
         navigation.navigate('Home');
@@ -22,7 +20,6 @@ const Add = ({ navigation }) => {
 
     const openGalery = async () => {
         try {
-            // No permissions request is necessary for launching the image library
             let result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.All,
                 allowsEditing: true,
@@ -30,44 +27,51 @@ const Add = ({ navigation }) => {
                 quality: 1,
             });
 
-            console.log(result.assets[0].uri);
-
-            if (!result.canceled) {
+            if (!result.canceled && result.assets.length > 0) {
                 setProducto({
                     ...producto,
                     imagen: result.assets[0].uri
                 });
+                console.log('Imagen seleccionada:', result.assets[0].uri);
             }
-
         } catch (error) {
             console.log('Error al abrir la galería', error);
         }
-
-
     };
-
 
     const agregarProducto = async () => {
         try {
-            // Agregar el documento a Firestore y obtener la referencia
-            await addDoc(collection(database, 'productos'), producto);
+            let imageUrl = null;
 
-            // Acceder al ID del documento
+            if (producto.imagen) {
+                console.log('Subiendo imagen a Firebase Storage...');
+                const imageRef = ref(storage, `images/${Date.now()}-${producto.nombre}`);
+
+                const response = await fetch(producto.imagen);
+                const blob = await response.blob();
+
+                console.log('Antes del uploadBytes');
+                const snapshot = await uploadBytes(imageRef, blob);
+                console.log('Snapshot después del uploadBytes:', snapshot);
+
+                imageUrl = await getDownloadURL(snapshot.ref);
+                console.log("URL de la imagen:", imageUrl);
+            }
+
+            console.log('Datos del producto:', {...producto, imagen: imageUrl});
+            await addDoc(collection(database, 'productos'), {...producto, imagen: imageUrl});
             console.log('Se guardó la colección');
 
             Alert.alert('Producto agregado', 'El producto se agregó correctamente', [
-                {
-                    text: 'Ok',
-                    onPress: goToHome,
-                },
+                { text: 'Ok', onPress: goToHome },
             ]);
-            // Navegar a la pantalla de inicio
-            goToHome();
 
+            goToHome();
         } catch (error) {
             console.error('Error al agregar el producto', error);
+            Alert.alert('Error', 'Ocurrió un error al agregar el producto. Por favor, intenta nuevamente.');
         }
-    }
+    };
 
     return (
         <View style={styles.container}>
@@ -95,15 +99,11 @@ const Add = ({ navigation }) => {
             </TouchableOpacity>
             {producto.imagen ? <Image source={{ uri: producto.imagen }} style={styles.imagePreview} /> : null}
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={agregarProducto}>
+            <TouchableOpacity style={styles.button} onPress={agregarProducto}>
                 <Text style={styles.buttonText}>Agregar producto</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-                style={styles.button}
-                onPress={goToHome}>
+            <TouchableOpacity style={styles.button} onPress={goToHome}>
                 <Text style={styles.buttonText}>Volver a home</Text>
             </TouchableOpacity>
         </View>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 4,
         paddingLeft: 8,
-        backgroundColor: '#fff', // Fondo blanco para el TextInput
+        backgroundColor: '#fff',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -173,12 +173,12 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 16,
         marginBottom: 8,
-        color: '#333', // Color de texto oscuro para mejor legibilidad
+        color: '#333',
     },
     inputContainer: {
         width: '100%',
         padding: 16,
-        backgroundColor: '#f8f9fa', // Fondo claro para mejor visibilidad
-        marginBottom: 16, // Espacio entre cada conjunto de Text y TextInput
+        backgroundColor: '#f8f9fa',
+        marginBottom: 16,
     },
 });
