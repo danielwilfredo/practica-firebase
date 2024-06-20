@@ -24,10 +24,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/pokeball.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.danielwilfredo11.firebaseapp"
     },
     "web": {
       "favicon": "./assets/pokebal_favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ed59bb51-ed15-4a41-b1aa-c774c825a952"
+      }
     }
   }
 }
