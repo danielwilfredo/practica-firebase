@@ -1,10 +1,24 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { database } from '../config/firebase';
+/*
+Esta línea está importando database desde un archivo de configuración de Firebase ubicado en ../config/firebase.
+*/
+
 import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 
+/*
+Esta línea importa tres funciones específicas de la biblioteca firebase/firestore:
+
+    deleteDoc: Esta función se utiliza para eliminar un documento específico de una colección en Firestore.
+    doc: Esta función se utiliza para crear una referencia a un documento específico dentro de una colección en Firestore.
+    updateDoc: Esta función se utiliza para actualizar campos específicos de un documento existente en Firestore
+*/
+
+// Función para eliminar un documento de Firestore
 const handleDelete = async (id) => {
     try {
+        // Se elimina el documento con el id proporcionado de la colección 'productos'
         await deleteDoc(doc(database, 'productos', id));
         console.log('Se eliminó el documento con id: ', id);
     } catch (e) {
@@ -12,8 +26,10 @@ const handleDelete = async (id) => {
     }
 };
 
+// Función para actualizar el estado de 'vendido' de un documento en Firestore
 const handleUpdate = async (id, vendido) => {
     try {
+        // Se actualiza el campo 'vendido' invirtiendo su valor actual
         await updateDoc(doc(database, 'productos', id), {
             vendido: !vendido
         });
@@ -23,6 +39,7 @@ const handleUpdate = async (id, vendido) => {
     }
 };
 
+// Componente funcional que representa una tarjeta de producto
 const CardProductos = ({ id, nombre, precio, vendido, imagen }) => {
     return (
         <View style={styles.card}>
@@ -54,6 +71,7 @@ const CardProductos = ({ id, nombre, precio, vendido, imagen }) => {
     );
 };
 
+// Estilos del componente
 const styles = StyleSheet.create({
     card: {
         backgroundColor: '#fff',

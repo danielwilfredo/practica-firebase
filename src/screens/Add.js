@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Image, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Image, Alert, ActivityIndicator } from 'react-native';
 import { database, storage } from '../config/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
 
+// Componente Add para agregar un nuevo producto
 const Add = ({ navigation }) => {
+    // Estado inicial del producto
     const [producto, setProducto] = useState({
         nombre: '',
         precio: 0,
@@ -14,10 +16,14 @@ const Add = ({ navigation }) => {
         imagen: ''
     });
 
+    const [loading, setLoading] = useState(false); // Estado de carga
+
+    // Función para navegar a la pantalla de inicio
     const goToHome = () => {
         navigation.navigate('Home');
     };
 
+    // Función para abrir la galería de imágenes del dispositivo
     const openGalery = async () => {
         try {
             let result = await ImagePicker.launchImageLibraryAsync({
@@ -39,27 +45,23 @@ const Add = ({ navigation }) => {
         }
     };
 
+    // Función para agregar el producto a Firestore
     const agregarProducto = async () => {
+        setLoading(true); // Iniciar la carga
         try {
             let imageUrl = null;
 
             if (producto.imagen) {
                 console.log('Subiendo imagen a Firebase Storage...');
                 const imageRef = ref(storage, `images/${Date.now()}-${producto.nombre}`);
-
                 const response = await fetch(producto.imagen);
                 const blob = await response.blob();
-
-                console.log('Antes del uploadBytes');
                 const snapshot = await uploadBytes(imageRef, blob);
-                console.log('Snapshot después del uploadBytes:', snapshot);
-
                 imageUrl = await getDownloadURL(snapshot.ref);
                 console.log("URL de la imagen:", imageUrl);
             }
 
-            console.log('Datos del producto:', {...producto, imagen: imageUrl});
-            await addDoc(collection(database, 'productos'), {...producto, imagen: imageUrl});
+            await addDoc(collection(database, 'productos'), { ...producto, imagen: imageUrl });
             console.log('Se guardó la colección');
 
             Alert.alert('Producto agregado', 'El producto se agregó correctamente', [
@@ -70,6 +72,8 @@ const Add = ({ navigation }) => {
         } catch (error) {
             console.error('Error al agregar el producto', error);
             Alert.alert('Error', 'Ocurrió un error al agregar el producto. Por favor, intenta nuevamente.');
+        } finally {
+            setLoading(false); // Finalizar la carga
         }
     };
 
@@ -99,19 +103,26 @@ const Add = ({ navigation }) => {
             </TouchableOpacity>
             {producto.imagen ? <Image source={{ uri: producto.imagen }} style={styles.imagePreview} /> : null}
 
-            <TouchableOpacity style={styles.button} onPress={agregarProducto}>
-                <Text style={styles.buttonText}>Agregar producto</Text>
-            </TouchableOpacity>
+            {loading ? (
+                <ActivityIndicator size="large" color="#0288d1" />
+            ) : (
+                <>
+                    <TouchableOpacity style={styles.button} onPress={agregarProducto}>
+                        <Text style={styles.buttonText}>Agregar producto</Text>
+                    </TouchableOpacity>
 
-            <TouchableOpacity style={styles.button} onPress={goToHome}>
-                <Text style={styles.buttonText}>Volver a home</Text>
-            </TouchableOpacity>
+                    <TouchableOpacity style={styles.button} onPress={goToHome}>
+                        <Text style={styles.buttonText}>Volver a home</Text>
+                    </TouchableOpacity>
+                </>
+            )}
         </View>
     );
 };
 
 export default Add;
 
+// Estilos del componente
 const styles = StyleSheet.create({
     container: {
         flex: 1,
